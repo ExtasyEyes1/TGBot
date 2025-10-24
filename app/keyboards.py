@@ -1,13 +1,31 @@
-from aiogram.types import (ReplyKeyboardMarkup, KeyboardButton, 
+from aiogram.types import (ReplyKeyboardMarkup, KeyboardButton,
                            InlineKeyboardMarkup, InlineKeyboardButton)
 
-main = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text="АИП")],
-                                     [KeyboardButton(text="Физика")],
-                                     [KeyboardButton(text="ОССТ")]],
-                            resize_keyboard=True,
-                            input_field_placeholder="Выберите нужный предмет...")
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-aip = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text="Лаб1 300р", callback_data="lab1")],
-    [InlineKeyboardButton(text="Лаба2 200р", callback_data="lab2")],
-    [InlineKeyboardButton(text="Максим Пидорас W", callback_data="lab3")]])
+from app.database.requests import get_categories, get_category_item
+
+
+
+main = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text="Каталог")],
+                                     [KeyboardButton(text="Корзина")],
+                                     [KeyboardButton(text="Контакты")]],
+                            resize_keyboard=True,
+                            input_field_placeholder="Выберите пункт меню...")
+
+async def categories():
+    all_categories = await get_categories()
+    keyboard = InlineKeyboardBuilder()
+    for category in all_categories:
+        keyboard.add(InlineKeyboardButton(text=category.name, callback_data=f"category_{category.id}"))
+    keyboard.add(InlineKeyboardButton(text='На главную', callback_data='to_main'))
+    return keyboard.adjust(2).as_markup()
+
+
+async def items(category_id):
+    all_items = await get_category_item(category_id)
+    keyboard = InlineKeyboardBuilder()
+    for item in all_items:
+        keyboard.add(InlineKeyboardButton(text=item.name, callback_data=f"item_{item.id}"))
+    keyboard.add(InlineKeyboardButton(text='На главную', callback_data='to_main'))
+    return keyboard.adjust(2).as_markup()
